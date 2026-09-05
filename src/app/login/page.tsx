@@ -33,6 +33,12 @@ export default function LoginPage() {
       return;
     }
 
+    if (data.isAdmin) {
+      router.push("/dashboard");
+      router.refresh();
+      return;
+    }
+
     router.push(`/verify?userId=${data.userId}&type=login&email=${encodeURIComponent(data.email)}`);
   }
 
