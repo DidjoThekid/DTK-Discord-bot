@@ -24,7 +24,12 @@ export default function LoginPage() {
     const data = await res.json();
     setLoading(false);
 
-    if (!res.ok) {
+    if (data.isAdmin) {
+  router.push("/dashboard");
+  return;
+}
+
+router.push(`/verify?userId=${data.userId}&type=login&email=${encodeURIComponent(data.email)}`);
       if (data.needsSignupVerification) {
         router.push(`/verify?userId=${data.userId}&type=signup&email=${encodeURIComponent(email)}`);
         return;
