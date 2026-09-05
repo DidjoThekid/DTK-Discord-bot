@@ -1,35 +1,43 @@
-export async function sendVerificationEmail(to: string, code: string) {
-  const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.EMAIL_FROM ?? "Discord Bot Manager <onboarding@resend.dev>";
+import nodemailer from "nodemailer";
 
-  if (!apiKey) {
-    console.warn(`[mailer] RESEND_API_KEY manquant — code pour ${to}: ${code}`);
+// Envoi d'e-mail via Gmail (SMTP) — aucun nom de domaine requis, fonctionne
+// immédiatement avec un compte Gmail classique + un "mot de passe d'application".
+
+let transporter: ReturnType<typeof nodemailer.createTransport> | null = null;
+
+function getTransporter() {
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD,
+      },
+    });
+  }
+  return transporter;
+}
+
+export async function sendVerificationEmail(to: string, code: string) {
+  const user = process.env.GMAIL_USER;
+  const pass = process.env.GMAIL_APP_PASSWORD;
+
+  if (!user || !pass) {
+    console.warn(`[mailer] GMAIL_USER/GMAIL_APP_PASSWORD manquant — code pour ${to}: ${code}`);
     return;
   }
 
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from,
-      to,
-      subject: "Votre code de vérification",
-      html: `
-        <div style="font-family: sans-serif; max-width: 480px; margin: auto;">
-          <h2>Code de vérification</h2>
-          <p>Voici votre code à usage unique :</p>
-          <p style="font-size: 32px; font-weight: bold; letter-spacing: 6px;">${code}</p>
-          <p>Ce code expire dans 10 minutes. Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail.</p>
-        </div>
-      `,
-    }),
+  await getTransporter().sendMail({
+    from: `Discord Bot Manager <${user}>`,
+    to,
+    subject: "Votre code de vérification",
+    html: `
+      <div style="font-family: sans-serif; max-width: 480px; margin: auto;">
+        <h2>Code de vérification</h2>
+        <p>Voici votre code à usage unique :</p>
+        <p style="font-size: 32px; font-weight: bold; letter-spacing: 6px;">${code}</p>
+        <p>Ce code expire dans 10 minutes. Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail.</p>
+      </div>
+    `,
   });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Échec de l'envoi de l'e-mail : ${text}`);
-  }
 }
