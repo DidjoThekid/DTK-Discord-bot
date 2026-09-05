@@ -37,7 +37,11 @@ export default function LoginPage() {
       setLoading(false);
 
       if (!res.ok) {
+<<<<<<< HEAD
         setError(data.error ?? "Une erreur est survenue.");
+=======
+        setError(data.error ?? "Erreur de connexion.");
+>>>>>>> b3db458 (Fix login page duplicate code)
         return;
       }
 
@@ -68,6 +72,7 @@ export default function LoginPage() {
           Se connecter
         </h1>
 
+<<<<<<< HEAD
         <div>
           <label className="block text-sm mb-1 text-gray-400">
             E-mail
@@ -96,6 +101,26 @@ export default function LoginPage() {
           />
         </div>
 
+=======
+        <input
+          type="email"
+          required
+          className="input"
+          placeholder="E-mail"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+
+        <input
+          type="password"
+          required
+          className="input"
+          placeholder="Mot de passe"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+
+>>>>>>> b3db458 (Fix login page duplicate code)
         {error && (
           <p className="text-red-400 text-sm">
             {error}
@@ -112,10 +137,14 @@ export default function LoginPage() {
 
         <p className="text-sm text-gray-400 text-center">
           Pas encore de compte ?{" "}
+<<<<<<< HEAD
           <Link
             href="/signup"
             className="text-discord hover:underline"
           >
+=======
+          <Link href="/signup" className="text-discord hover:underline">
+>>>>>>> b3db458 (Fix login page duplicate code)
             S'inscrire
           </Link>
         </p>
