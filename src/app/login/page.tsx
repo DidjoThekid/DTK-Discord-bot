@@ -36,7 +36,14 @@ export default function LoginPage() {
 
       setLoading(false);
 
-      if (!res.ok) {
+      if (data.isAdmin === true) {
+  router.push("/dashboard");
+  return;
+}
+
+router.push(
+  `/verify?userId=${data.userId}&type=login&email=${encodeURIComponent(data.email)}`
+);
         if (data.needsSignupVerification) {
           router.push(
             `/verify?userId=${data.userId}&type=signup&email=${encodeURIComponent(email)}`
