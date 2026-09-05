@@ -6,7 +6,6 @@ import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -14,70 +13,36 @@ export default function LoginPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-
     setError("");
     setLoading(true);
 
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      });
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    setLoading(false);
 
-      const data = await res.json();
-
-      console.log("LOGIN RESPONSE:", data);
-
-      setLoading(false);
-
-      if (!res.ok) {
-<<<<<<< HEAD
-        setError(data.error ?? "Une erreur est survenue.");
-=======
-        setError(data.error ?? "Erreur de connexion.");
->>>>>>> b3db458 (Fix login page duplicate code)
+    if (!res.ok) {
+      if (data.needsSignupVerification) {
+        router.push(`/verify?userId=${data.userId}&type=signup&email=${encodeURIComponent(email)}`);
         return;
       }
-
-      if (data.isAdmin === true) {
-        console.log("ADMIN REDIRECT");
-        router.push("/dashboard");
-        return;
-      }
-
-      router.push(
-        `/verify?userId=${data.userId}&type=login&email=${encodeURIComponent(data.email)}`
-      );
-
-    } catch (err) {
-      console.error(err);
-      setLoading(false);
-      setError("Erreur serveur.");
+      setError(data.error ?? "Une erreur est survenue.");
+      return;
     }
+
+    router.push(`/verify?userId=${data.userId}&type=login&email=${encodeURIComponent(data.email)}`);
   }
 
   return (
     <main className="flex min-h-screen items-center justify-center px-4">
-      <form
-        onSubmit={handleSubmit}
-        className="card w-full max-w-sm p-6 space-y-4"
-      >
-        <h1 className="text-2xl font-bold">
-          Se connecter
-        </h1>
+      <form onSubmit={handleSubmit} className="card w-full max-w-sm p-6 space-y-4">
+        <h1 className="text-2xl font-bold">Se connecter</h1>
 
-<<<<<<< HEAD
         <div>
-          <label className="block text-sm mb-1 text-gray-400">
-            E-mail
-          </label>
-
+          <label className="block text-sm mb-1 text-gray-400">E-mail</label>
           <input
             type="email"
             required
@@ -88,10 +53,7 @@ export default function LoginPage() {
         </div>
 
         <div>
-          <label className="block text-sm mb-1 text-gray-400">
-            Mot de passe
-          </label>
-
+          <label className="block text-sm mb-1 text-gray-400">Mot de passe</label>
           <input
             type="password"
             required
@@ -101,54 +63,18 @@ export default function LoginPage() {
           />
         </div>
 
-=======
-        <input
-          type="email"
-          required
-          className="input"
-          placeholder="E-mail"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+        {error && <p className="text-red-400 text-sm">{error}</p>}
 
-        <input
-          type="password"
-          required
-          className="input"
-          placeholder="Mot de passe"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-
->>>>>>> b3db458 (Fix login page duplicate code)
-        {error && (
-          <p className="text-red-400 text-sm">
-            {error}
-          </p>
-        )}
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="btn-primary w-full"
-        >
-          {loading ? "Connexion..." : "Continuer"}
+        <button type="submit" disabled={loading} className="btn-primary w-full">
+          {loading ? "Envoi..." : "Continuer"}
         </button>
 
         <p className="text-sm text-gray-400 text-center">
           Pas encore de compte ?{" "}
-<<<<<<< HEAD
-          <Link
-            href="/signup"
-            className="text-discord hover:underline"
-          >
-=======
           <Link href="/signup" className="text-discord hover:underline">
->>>>>>> b3db458 (Fix login page duplicate code)
             S'inscrire
           </Link>
         </p>
-
       </form>
     </main>
   );
