@@ -24,20 +24,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(genericError, { status: 401 });
   }
 
-  // Pas de vérification par email pour l'admin
-  if (user.isAdmin) {
+  // L'admin ne demande pas de code
+  if (!user.isAdmin) {
+    const code = await createVerificationCode(user.id, "login");
+    await sendVerificationEmail(email, code);
+  }
+
   return NextResponse.json({
     userId: user.id,
     email: user.email,
-    isAdmin: true,
-    skipVerification: true,
+    isAdmin: user.isAdmin,
   });
 }
-
-const code = await createVerificationCode(user.id, "login");
-await sendVerificationEmail(email, code);
-
-return NextResponse.json({
-  userId: user.id,
-  email: user.email,
-});
