@@ -6,6 +6,7 @@ import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -18,36 +19,52 @@ export default function LoginPage() {
 
     const res = await fetch("/api/auth/login", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ email, password }),
     });
+
     const data = await res.json();
+
     setLoading(false);
 
-    if (data.isAdmin) {
-  router.push("/dashboard");
-  return;
-}
-
-router.push(`/verify?userId=${data.userId}&type=login&email=${encodeURIComponent(data.email)}`);
+    if (!res.ok) {
       if (data.needsSignupVerification) {
-        router.push(`/verify?userId=${data.userId}&type=signup&email=${encodeURIComponent(email)}`);
+        router.push(
+          `/verify?userId=${data.userId}&type=signup&email=${encodeURIComponent(email)}`
+        );
         return;
       }
+
       setError(data.error ?? "Une erreur est survenue.");
       return;
     }
 
-    router.push(`/verify?userId=${data.userId}&type=login&email=${encodeURIComponent(data.email)}`);
+    if (data.isAdmin) {
+      router.push("/dashboard");
+      return;
+    }
+
+    router.push(
+      `/verify?userId=${data.userId}&type=login&email=${encodeURIComponent(
+        data.email
+      )}`
+    );
   }
 
   return (
     <main className="flex min-h-screen items-center justify-center px-4">
-      <form onSubmit={handleSubmit} className="card w-full max-w-sm p-6 space-y-4">
+      <form
+        onSubmit={handleSubmit}
+        className="card w-full max-w-sm p-6 space-y-4"
+      >
         <h1 className="text-2xl font-bold">Se connecter</h1>
 
         <div>
-          <label className="block text-sm mb-1 text-gray-400">E-mail</label>
+          <label className="block text-sm mb-1 text-gray-400">
+            E-mail
+          </label>
           <input
             type="email"
             required
@@ -58,7 +75,9 @@ router.push(`/verify?userId=${data.userId}&type=login&email=${encodeURIComponent
         </div>
 
         <div>
-          <label className="block text-sm mb-1 text-gray-400">Mot de passe</label>
+          <label className="block text-sm mb-1 text-gray-400">
+            Mot de passe
+          </label>
           <input
             type="password"
             required
@@ -68,9 +87,15 @@ router.push(`/verify?userId=${data.userId}&type=login&email=${encodeURIComponent
           />
         </div>
 
-        {error && <p className="text-red-400 text-sm">{error}</p>}
+        {error && (
+          <p className="text-red-400 text-sm">{error}</p>
+        )}
 
-        <button type="submit" disabled={loading} className="btn-primary w-full">
+        <button
+          type="submit"
+          disabled={loading}
+          className="btn-primary w-full"
+        >
           {loading ? "Envoi..." : "Continuer"}
         </button>
 
