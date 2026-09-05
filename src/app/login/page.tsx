@@ -14,43 +14,58 @@ export default function LoginPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
     setError("");
     setLoading(true);
 
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    setLoading(false);
+      console.log("LOGIN RESPONSE:", data);
 
-    if (!res.ok) {
-      if (data.needsSignupVerification) {
-        router.push(
-          `/verify?userId=${data.userId}&type=signup&email=${encodeURIComponent(email)}`
-        );
+      setLoading(false);
+
+      if (!res.ok) {
+        if (data.needsSignupVerification) {
+          router.push(
+            `/verify?userId=${data.userId}&type=signup&email=${encodeURIComponent(email)}`
+          );
+          return;
+        }
+
+        setError(data.error || "Erreur de connexion.");
         return;
       }
 
-      setError(data.error ?? "Une erreur est survenue.");
-      return;
-    }
+      // Connexion directe pour l'administrateur
+      if (data.isAdmin === true) {
+        router.push("/dashboard");
+        return;
+      }
 
-    if (data.isAdmin) {
-      router.push("/dashboard");
-      return;
-    }
+      // Utilisateur normal avec code email
+      router.push(
+        `/verify?userId=${data.userId}&type=login&email=${encodeURIComponent(
+          data.email
+        )}`
+      );
 
-    router.push(
-      `/verify?userId=${data.userId}&type=login&email=${encodeURIComponent(
-        data.email
-      )}`
-    );
+    } catch (err) {
+      console.error(err);
+      setLoading(false);
+      setError("Erreur serveur.");
+    }
   }
 
   return (
@@ -59,12 +74,15 @@ export default function LoginPage() {
         onSubmit={handleSubmit}
         className="card w-full max-w-sm p-6 space-y-4"
       >
-        <h1 className="text-2xl font-bold">Se connecter</h1>
+        <h1 className="text-2xl font-bold">
+          Se connecter
+        </h1>
 
         <div>
           <label className="block text-sm mb-1 text-gray-400">
             E-mail
           </label>
+
           <input
             type="email"
             required
@@ -78,6 +96,7 @@ export default function LoginPage() {
           <label className="block text-sm mb-1 text-gray-400">
             Mot de passe
           </label>
+
           <input
             type="password"
             required
@@ -88,7 +107,9 @@ export default function LoginPage() {
         </div>
 
         {error && (
-          <p className="text-red-400 text-sm">{error}</p>
+          <p className="text-red-400 text-sm">
+            {error}
+          </p>
         )}
 
         <button
@@ -96,15 +117,19 @@ export default function LoginPage() {
           disabled={loading}
           className="btn-primary w-full"
         >
-          {loading ? "Envoi..." : "Continuer"}
+          {loading ? "Connexion..." : "Continuer"}
         </button>
 
         <p className="text-sm text-gray-400 text-center">
           Pas encore de compte ?{" "}
-          <Link href="/signup" className="text-discord hover:underline">
+          <Link
+            href="/signup"
+            className="text-discord hover:underline"
+          >
             S'inscrire
           </Link>
         </p>
+
       </form>
     </main>
   );
