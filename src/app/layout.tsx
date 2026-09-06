@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import CursorTrail from "@/components/CursorTrail";
+import CustomCursor from "@/components/CustomCursor";
 
 export const metadata: Metadata = {
-  title: "My Bot - Team DTK",
-  description: "Gérez tous vos bots Discord de la Team DTK depuis un seul endroit.",
+  title: "Discord Bot Manager",
+  description: "Gérez tous vos bots Discord depuis un seul endroit.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr">
       <body className="min-h-screen">
-        <CursorTrail />
+        <CustomCursor />
         {children}
       </body>
     </html>
