@@ -16,20 +16,25 @@ export default function SignupPage() {
     setError("");
     setLoading(true);
 
-    const res = await fetch("/api/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-    const data = await res.json();
-    setLoading(false);
+    try {
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
 
-    if (!res.ok) {
-      setError(data.error ?? "Une erreur est survenue.");
-      return;
+      if (!res.ok) {
+        setError(data.error ?? "Une erreur est survenue.");
+        return;
+      }
+
+      router.push(`/verify?userId=${data.userId}&type=signup&email=${encodeURIComponent(data.email)}`);
+    } catch {
+      setError("Erreur de connexion au serveur. Réessayez.");
+    } finally {
+      setLoading(false);
     }
-
-    router.push(`/verify?userId=${data.userId}&type=signup&email=${encodeURIComponent(data.email)}`);
   }
 
   return (
