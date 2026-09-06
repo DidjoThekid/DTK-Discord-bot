@@ -16,30 +16,35 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
 
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-    const data = await res.json();
-    setLoading(false);
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
 
-    if (!res.ok) {
-      if (data.needsSignupVerification) {
-        router.push(`/verify?userId=${data.userId}&type=signup&email=${encodeURIComponent(email)}`);
+      if (!res.ok) {
+        if (data.needsSignupVerification) {
+          router.push(`/verify?userId=${data.userId}&type=signup&email=${encodeURIComponent(email)}`);
+          return;
+        }
+        setError(data.error ?? "Une erreur est survenue.");
         return;
       }
-      setError(data.error ?? "Une erreur est survenue.");
-      return;
-    }
 
-    if (data.isAdmin) {
-      router.push("/dashboard");
-      router.refresh();
-      return;
-    }
+      if (data.isAdmin) {
+        router.push("/dashboard");
+        router.refresh();
+        return;
+      }
 
-    router.push(`/verify?userId=${data.userId}&type=login&email=${encodeURIComponent(data.email)}`);
+      router.push(`/verify?userId=${data.userId}&type=login&email=${encodeURIComponent(data.email)}`);
+    } catch {
+      setError("Erreur de connexion au serveur. Réessayez.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
