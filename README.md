@@ -1,4 +1,4 @@
-# Discord Bot Manager
+# My Bot - Team DTK
 
 Site pour connecter, surveiller et piloter tous vos bots Discord depuis un seul tableau de bord, avec :
 
