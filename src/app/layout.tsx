@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Discord Bot Manager",
-  description: "Gérez tous vos bots Discord depuis un seul endroit.",
+  title: "My Bot - Team DTK",
+  description: "Gérez tous vos bots Discord de la Team DTK depuis un seul endroit.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
