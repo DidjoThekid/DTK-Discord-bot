@@ -54,3 +54,16 @@ model Bot {
 
   @@map("bots")
 }
+
+// Messages envoyés via le formulaire de contact public, lus par les admins
+model SupportMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String?
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("support_messages")
+}
