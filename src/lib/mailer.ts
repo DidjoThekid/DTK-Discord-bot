@@ -23,7 +23,7 @@ export async function sendVerificationEmail(to: string, code: string) {
       user_id: publicKey,
       accessToken: privateKey,
       template_params: {
-        to_email: to,
+        email: to,
         code,
       },
     }),
