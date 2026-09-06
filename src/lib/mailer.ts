@@ -1,43 +1,40 @@
-import nodemailer from "nodemailer";
-
-// Envoi d'e-mail via Gmail (SMTP) — aucun nom de domaine requis, fonctionne
-// immédiatement avec un compte Gmail classique + un "mot de passe d'application".
-
-let transporter: ReturnType<typeof nodemailer.createTransport> | null = null;
-
-function getTransporter() {
-  if (!transporter) {
-    transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_APP_PASSWORD,
-      },
-    });
-  }
-  return transporter;
-}
+// Envoi d'e-mail via l'API HTTP de Resend (https://resend.com).
+// Inscription gratuite avec juste une adresse e-mail, aucun numéro de téléphone requis.
+// En sandbox (sans domaine vérifié), tu ne peux envoyer qu'à l'adresse de ton propre
+// compte Resend. Pour envoyer à n'importe qui, vérifie un domaine (gratuit, voir README).
 
 export async function sendVerificationEmail(to: string, code: string) {
-  const user = process.env.GMAIL_USER;
-  const pass = process.env.GMAIL_APP_PASSWORD;
+  const apiKey = process.env.RESEND_API_KEY;
+  const from = process.env.EMAIL_FROM ?? "Discord Bot Manager <onboarding@resend.dev>";
 
-  if (!user || !pass) {
-    console.warn(`[mailer] GMAIL_USER/GMAIL_APP_PASSWORD manquant — code pour ${to}: ${code}`);
+  if (!apiKey) {
+    console.warn(`[mailer] RESEND_API_KEY manquant — code pour ${to}: ${code}`);
     return;
   }
 
-  await getTransporter().sendMail({
-    from: `Discord Bot Manager <${user}>`,
-    to,
-    subject: "Votre code de vérification",
-    html: `
-      <div style="font-family: sans-serif; max-width: 480px; margin: auto;">
-        <h2>Code de vérification</h2>
-        <p>Voici votre code à usage unique :</p>
-        <p style="font-size: 32px; font-weight: bold; letter-spacing: 6px;">${code}</p>
-        <p>Ce code expire dans 10 minutes. Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail.</p>
-      </div>
-    `,
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from,
+      to,
+      subject: "Votre code de vérification",
+      html: `
+        <div style="font-family: sans-serif; max-width: 480px; margin: auto;">
+          <h2>Code de vérification</h2>
+          <p>Voici votre code à usage unique :</p>
+          <p style="font-size: 32px; font-weight: bold; letter-spacing: 6px;">${code}</p>
+          <p>Ce code expire dans 10 minutes. Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail.</p>
+        </div>
+      `,
+    }),
   });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Échec de l'envoi de l'e-mail (Resend) : ${text}`);
+  }
 }
